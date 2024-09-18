@@ -1,34 +1,49 @@
 import { Router } from "express";
-import { ProductManager } from "../service/ProductManager.js";
-
-const productRouter = Router();
+import { ProductManager } from "../managers/ProductManager.js";
 const products = new ProductManager("./src/data/products.json");
+const productRouter = Router();
 
-//Controller para todos los productos
+//todos los productos
 productRouter.get(`/`, async (req, res) => {
+    let limit = parseInt(req.query.limit, 10);
+    
+    if(isNaN(limit) || limit <= 0){
+        limit = null
+    }
+
     try {
-        const { limit } = req.query;
         const productList = await products.getProducts();
-        res.json(limit ? productList.slice(0, Number(limit)) : productList);
+        if(limit){
+            res.json(productList.slice(0, limit));
+        }else{
+            res.json(productList);
+        }
     } catch (error) {
         res.status(500).send(error.message);
     }
 });
 
-//Controller de busqueda por Id
+//producto por id
 productRouter.get(`/:id`, async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+
+    if(isNaN(id)){
+        return res.status(400).json({error: "El ID debe ser un numero valido"});
+    }
+
     try {
-        const { id } = req.params;
-        const product = await products.getProductById(id);
-        if (product) {
+        const product = await products.getProductById(parseInt(id));
+        if (!product) {
+            res.send("producto no encontrado")
+        }else{
             res.json(product);
         }
     } catch (error) {
-        res.status(404).send({ error: "producto no existe" });
+        res.status(500).send({ error: "Error en el servidor"});
     }
 });
 
-//Controller para eliminar un producto
+//producto eliminado
 productRouter.delete(`/:id`, async (req, res) => {
     const { id } = req.params;
     try {
@@ -39,19 +54,15 @@ productRouter.delete(`/:id`, async (req, res) => {
     }
 });
 
-//Controller para agregar un producto
+//nuevo producto
 productRouter.post(`/`, async (req, res) => {
-
-    //validacion de los campos necesarios
     const { title, description, price, code, stock } = req.body;  
+
     if (!title || !description || price === undefined || !code || stock === undefined) {
         return res.status(400).send({status: 'Error', error: "Todos los campos son obligatorios excepto thumbnails" });
     }
-
-    //status con valor por defecto en true si no es ingresado
     const status = req.body.status !== undefined ? req.body.status : true; 
 
-    //status con valor por defecto en true si no es ingresado
     const thumbnails = req.body.thumbnails !== undefined ? req.body.thumbnails : []; 
 
     try {
@@ -63,7 +74,7 @@ productRouter.post(`/`, async (req, res) => {
     }
 });
 
-//Controller para actualizar un producto
+//actualizo un producto
 productRouter.put(`/:id`, async (req, res) => {
     const { id } = req.params;
     try {
