@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { CartManager } from "../service/CartManager.js";
 import { ProductManager } from "../service/ProductManager.js";
+import { socketServer } from '../app.js';
 
 const cartsRouter = Router();
 const carts = new CartManager("./src/data/carts.json");

@@ -36,3 +36,4 @@ socketServer.on("connection", async (socket) => {
   socket.emit("productList", productList);
   });
 
+  export { socketServer };
