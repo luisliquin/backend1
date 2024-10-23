@@ -42,13 +42,13 @@ export class ProductManagerDB {
                 category,
                 thumbnails: thumbnails ?? []
             });
-            res.send({
+            return({
                 status: 'success',
                 payload: result,
             })
         } catch (error) {
             console.error(error.message);
-            throw new Error('Error al crear el producto');
+            throw new Error(`Error al crear el producto: ${error}`);
         }
     }
 
@@ -82,7 +82,7 @@ export class ProductManagerDB {
             return await productModel.paginate(filter, options);
         } catch (error) {
             console.error(error.message);
-            throw new Error("Error al buscar los productos");
+            throw new Error(`Error al buscar los productos: ${error}`);
         }
     }
 }

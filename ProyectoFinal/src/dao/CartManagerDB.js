@@ -30,7 +30,7 @@ export class CartManagerDB {
             return addCart;
         } catch (error) {
             console.error(error.message);
-            throw new Error("Error al crear el carrito");
+            throw new Error(`Error al crear el carrito: ${error}`);
         }
     }
 

@@ -49,15 +49,15 @@ productRouter.get(`/`, async (req, res) => {
             };
         };
 
-        const products = await ProductService.getPaginateProducts(searchQuery, options);
-        const {prevPage, nextPage, prevLink, nextLink} = buildLinks(products);
+        const paginatedProducts = await products.getPaginateProducts(searchQuery, options);
+        const {prevPage, nextPage, prevLink, nextLink} = buildLinks(paginatedProducts);
 
         let requestedPage = parseInt(page);
         if (isNaN(requestedPage) || requestedPage < 1) {
             requestedPage = 1;
         }
 
-        if (requestedPage > products.totalPages) {
+        if (requestedPage > paginatedProducts.totalPages) {
             return res
                 .status(404)
                 .json({error: "La página solicitada está fuera de rango"});
@@ -65,11 +65,11 @@ productRouter.get(`/`, async (req, res) => {
 
         const response = {
             status: "success",
-            payload: products.docs,
-            totalPages: products.totalPages,
+            payload: paginatedProducts.docs,
+            totalPages: paginatedProducts.totalPages,
             page: parseInt(page),
-            hasPrevPage: products.hasPrevPage,
-            hasNextPage: products.hasNextPage,
+            hasPrevPage: paginatedProducts.hasPrevPage,
+            hasNextPage: paginatedProducts.hasNextPage,
             prevPage,
             nextPage,
             prevLink,
@@ -79,7 +79,7 @@ productRouter.get(`/`, async (req, res) => {
         return res.status(200).send(response);
     } catch (error) {
         console.log(error);
-        res.status(500).json({error: "Error interno del servidor"});
+        res.status(500).json({error: `Error interno del servidor: ${error}`});
     }
 });
 
@@ -119,8 +119,8 @@ productRouter.post(`/`, async (req, res) => {
     const thumbnails = req.body.thumbnails !== undefined ? req.body.thumbnails : [];
 
     try {
-        await products.addProduct({title, description, price, code, stock, thumbnails, status, category});
-        res.status(201).send({status: "success", message: "producto agregado"});
+        const result = await products.addProduct({title, description, price, code, stock, thumbnails, status, category});
+        res.status(201).send({result});
     } catch (error) {
         console.log(`Error de post ${error}`);
         res.status(400).send({status: 'Error', error: error.message});
